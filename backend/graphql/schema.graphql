@@ -1,0 +1,163 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Query {
+  # quiz
+  quizList(cond: KeyConditionExpression!, pagination: DDBPagination): QuizListResult!
+  topicList: [String!]!
+
+  # score
+  # pk value is ignore if index is user_*
+  scoreList(cond: KeyConditionExpression! indexConfig: ScoreIndexConfig!, pagination: DDBPagination! descSort: Boolean): ScoreListResult!
+}
+
+type Mutation {
+  # quiz
+  addQuiz(input: QuizInput!): Quiz! @deprecated(reason: "")
+  populateQuizData: Int!
+
+  # score
+  addScore(input: ScoreInput!): Score!
+}
+
+type Subscription {
+  scoreAdded: Score @aws_subscribe(mutations: ["addScore"])
+}
+
+input DDBPagination {
+  limit: Int!
+  exclusiveStartKey: String
+}
+
+# generic input to help shaping the query command
+# more details at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
+# and https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_AttributeValue.html
+input KeyValue {
+  string: String
+  float: Float
+  int: Int
+}
+
+input KeyConditionExpression {
+  pk: KeyValue!
+  sk: SKConditionExpression
+}
+
+input SKConditionExpression {
+  eq: KeyValue
+  lt: KeyValue
+  lte: KeyValue
+  gt: KeyValue
+  gte: KeyValue
+  beginsWith: KeyValue
+  between: SKBetweenConditionExpression
+}
+
+input SKBetweenConditionExpression {
+  from: KeyValue!
+  to: KeyValue!
+}
+
+#----- QUIZ
+
+type Quiz {
+  topic: String! #pk
+  title: String! #sk
+
+  # concatiate topic + title
+  quizCode: String!
+  questions: [QuizQuestion!]!
+}
+
+type QuizQuestion {
+  questionText: String!
+  options: [QuizQuestionOption!]!
+}
+
+type QuizQuestionOption {
+  optionText: String!
+  isCorrect: Boolean!
+}
+
+type QuizListResult {
+    items: [Quiz!]!
+    lastEvaluatedKey: String
+}
+
+input QuizInput {
+  topic: String!
+  title: String!
+  questions: [QuizInputQuestion!]!
+}
+
+input QuizInputQuestion {
+  questionText: String!
+  options: [QuizInputQuestionOption!]!
+}
+
+input QuizInputQuestionOption {
+  optionText: String!
+  isCorrect: Boolean!
+}
+
+# ----- SCORE
+type Score {
+    username: String! #pk
+    userNickname: String! # for displaying while username should be masked (because it's email)
+    createdAt: AWSDateTime! #sk
+
+    # data copied from quiz
+    quizCode: String!
+    title: String!
+    topic: String!
+
+    nQuestions: Int!
+    nCorrect: Int!
+    percentage: Float!
+}
+
+type ScoreListResult {
+    items: [Score!]!
+    lastEvaluatedKey: String
+}
+
+input ScoreInput {
+    quizCode: String!
+    title: String!
+    topic: String!
+    
+    nQuestions: Int!
+    nCorrect: Int!
+}
+
+input ScoreIndexConfig {
+    # exactly one of these flags must be raised
+    quizCode_createdAt: Boolean
+    quizCode_percentage: Boolean
+    user_createdAt: Boolean
+    user_quizCode: Boolean
+    user_percentage: Boolean
+}
+
+#-- AWS
+# These types are defined by AppSync. We redefined them here so that it works nicely with codegen tools
+
+scalar AWSDate
+scalar AWSTime
+scalar AWSDateTime
+scalar AWSTimestamp
+scalar AWSEmail
+scalar AWSJSON
+scalar AWSURL
+scalar AWSPhone
+scalar AWSIPAddress
+
+directive @aws_subscribe(mutations: [String!]!) on FIELD_DEFINITION
+directive @aws_auth(cognito_groups: [String!]!) on FIELD_DEFINITION
+directive @aws_api_key on FIELD_DEFINITION | OBJECT
+directive @aws_iam on FIELD_DEFINITION | OBJECT
+directive @aws_oidc on FIELD_DEFINITION | OBJECT
+directive @aws_cognito_user_pools(cognito_groups: [String!]) on FIELD_DEFINITION | OBJECT
