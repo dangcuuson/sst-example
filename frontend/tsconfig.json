@@ -1,27 +1,21 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+    "extends": ["../tsconfig.base.json"],
+    "compilerOptions": {
+        "types": ["vite/client", "./styled-components-augmentation.d.ts"],
+        "jsx": "react-jsx",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+
+        // path mapping. Need to repeat this config in vite config aswell
+        "baseUrl": "./src", // This is to avoid adding the ./src prefix to each path below.
+        "paths": {
+            "@gql/*": ["gql/*"],
+            "@components/*": ["components/*"],
+            "@pages/*": ["pages/*"],
+            "@hooks/*": ["hooks/*"],
+            "@utils/*": ["utils/*"],
+            "@config/*": ["config/*"]
+        }
+    },
+    "include": ["src", "scripts", "playwright", "playwright-ct", "../../globalTypes.d.ts"]
 }

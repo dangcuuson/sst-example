@@ -1,8 +1,10 @@
 import { StackContext, AppSyncApi, Table } from "sst/constructs";
 import { LambdaEnv } from "../lambda/lambdaHelpers";
 import { DBQuizKeys, Quiz_distinctTopic_GSI } from "../models/models";
+import { RemovalPolicy } from "aws-cdk-lib/core";
 
-export function API({ stack }: StackContext) {
+export function API({ stack, app }: StackContext) {
+  const removalPoligy: RemovalPolicy = app.mode === 'dev' ? RemovalPolicy.DESTROY : RemovalPolicy.RETAIN;
   const quizTable = new Table(stack, "Quiz", {
     fields: {
       [DBQuizKeys.topic]: "string",
@@ -17,6 +19,7 @@ export function API({ stack }: StackContext) {
       projection: "keys_only",
     },
   });
+  quizTable.cdk.table.applyRemovalPolicy(removalPoligy);
 
   const appSyncApi = new AppSyncApi(stack, "GraphqlApi", {
     schema: "graphql/schema.graphql",

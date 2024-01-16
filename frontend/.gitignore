@@ -1,36 +1,18 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+.env
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+playwright/.auth
+playwright.env
+bundle-review.html
 
-# testing
-/coverage
+playwright-ct/playwright-report/
+playwright-ct/blob-report/
+playwright-ct/playwright/.cache/
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# local env files
-.env*.local
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# auto generated files that has high chance of merge conflict
+src/gql/gql.ts
+src/gql/graphql.ts
